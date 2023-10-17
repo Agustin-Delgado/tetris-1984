@@ -339,7 +339,7 @@ export default function Tetris({
         gameOver && window.addEventListener("click", () => inputNameRef.current?.focus());
         gameOver && inputNameRef.current?.focus();
 
-        const fallPiece = setInterval(() => movePiece("bottom"), 500);
+        const fallPiece = setInterval(() => movePiece("bottom"), 300);
         window.addEventListener("keydown", handlePressKey);
 
         return () => {

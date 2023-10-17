@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDhaa6uYQkxLkImrNtz50zSxCnMy2tU7_w",
+    apiKey: import.meta.env.VITE_FIREBASE_KEY,
     authDomain: "tetris-1984.firebaseapp.com",
     projectId: "tetris-1984",
     storageBucket: "tetris-1984.appspot.com",
