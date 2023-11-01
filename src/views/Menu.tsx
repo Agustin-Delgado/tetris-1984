@@ -10,6 +10,8 @@ export default function Menu({
     const [level, setLevel] = useState("");
     const inputLevelRef = useRef<HTMLInputElement>(null);
 
+    const startAudio = new Audio("/audio/beep.ogg");
+
     const handleChange = (e: { currentTarget: { value: string } }) => {
         const regex = /^$|^[0-9]+$/;
         if (!regex.test(e.currentTarget.value)) return;
@@ -18,14 +20,17 @@ export default function Menu({
 
     const handleSubmit = (e: { key: string }) => {
         if (e.key !== "Enter" || !level) return;
-        setScreen("tetris");
-        setSelectedLevel(level);
+        startAudio.play();
     };
 
     useEffect(() => {
         window.addEventListener("click", () => inputLevelRef.current?.focus());
+        startAudio.addEventListener("ended", () => {
+            setScreen("tetris");
+            setSelectedLevel(level);
+        });
         inputLevelRef.current?.focus();
-    }, []);
+    }, [startAudio]);
 
     return (
         <div className="menu-container">

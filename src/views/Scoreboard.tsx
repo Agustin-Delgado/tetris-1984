@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { DocumentData, collection, getDocs } from "firebase/firestore";
+import { DocumentData, collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import { db } from "../services/firebase";
 
 export default function Scoreboard({
@@ -11,19 +11,16 @@ export default function Scoreboard({
     const [value, setValue] = useState<string>("");
 
     const inputValueRef = useRef<HTMLInputElement>(null);
+    const keyAudio = new Audio("/audio/key.ogg");
 
     const getScores = async () => {
-        const scores: ((prevState: never[]) => never[]) | DocumentData[] = [];
-
-        const querySnapshot = await getDocs(collection(db, "scoreboard"));
-        querySnapshot.forEach((doc) => {
-            scores.push(doc.data());
-        });
-        setScores(
-            scores.sort((a, b) => {
-                return b.score - a.score;
-            })
+        const querySnapshot = await getDocs(
+            query(collection(db, "scoreboard"), orderBy("score", "desc"), limit(10))
         );
+
+        const docData = querySnapshot.docs.map((doc) => doc.data());
+
+        setScores(docData);
     };
 
     const handleResponse = () => {
@@ -87,17 +84,15 @@ export default function Scoreboard({
             <br />
             <br />
             <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
             <span className="insert-name">
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 START AGAIN? (YES/NO) - {value.toUpperCase()}
                 <span className="cursor">◼</span>
                 <input
-                    onChange={(e) => setValue(e.currentTarget.value)}
+                    onChange={(e) => {
+                        keyAudio.play();
+                        setValue(e.currentTarget.value);
+                    }}
                     value={value}
                     type="text"
                     ref={inputValueRef}

@@ -21,6 +21,7 @@ export default function Tetris({
     const [gameOver, setGameOver] = useState(false);
     const [comingPiece, setComingPiece] = useState<number[][] | null>(null);
     const [isShowNextEnabled, setIsShowNextEnabled] = useState<boolean>(false);
+    const [isShowControlsEnabled, setIsShowControlsEnabled] = useState<boolean>(true);
     const [score, setScore] = useState({
         score: 0,
         fullLines: 0,
@@ -30,6 +31,8 @@ export default function Tetris({
     const currentPieceRef = useRef<number[][] | null>(null);
     const currentPiecePositionRef = useRef<number[][]>([]);
     const inputNameRef = useRef<HTMLInputElement>(null);
+
+    const keyAudio = new Audio("/audio/key.ogg");
 
     const getNewPiece = () => {
         const newPiece = getRandomPiece();
@@ -61,7 +64,7 @@ export default function Tetris({
         currentPiecePositionRef.current = pieceAxes;
 
         setBoard((prevBoard) => {
-            const updatedBoard = prevBoard.map((rows) => rows.slice()); //Deep copy of board
+            const updatedBoard = prevBoard.map((rows) => rows.slice());
             for (let i = 0; i < pieceAxes.length; i++) {
                 updatedBoard[pieceAxes[i][0]][pieceAxes[i][1]] = 1;
             }
@@ -187,7 +190,7 @@ export default function Tetris({
 
             for (let i = 0; i < rowsCompleted.length; i++) {
                 updatedBoard.splice(rowsCompleted[i], 1);
-                updatedBoard.unshift([-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]);
+                updatedBoard.unshift(Array.from({ length: BW }, () => -1));
             }
 
             completedRows = rowsCompleted.length;
@@ -222,7 +225,8 @@ export default function Tetris({
         if ((direction === "bottom" && isPieceOnBottom) || (direction === "bottom" && isPlaceOccupied)) {
             removeCompletedRows();
             setScore((prevScore) => ({ ...prevScore, score: prevScore.score + 20 }));
-            return getNewPiece();
+            getNewPiece();
+            return;
         }
 
         if (isPieceOnBorder || isPlaceOccupied || isPieceOnBottom) return;
@@ -310,15 +314,19 @@ export default function Tetris({
     };
 
     const handlePressKey = (e: { key: string; repeat: boolean }) => {
+        keyAudio.currentTime = 0.1;
+        keyAudio.play();
+
         if (e.key === "ArrowDown") return movePiece("bottom");
 
         if (e.repeat) return;
 
         if (e.key === "1") return setIsShowNextEnabled((prevState) => !prevState);
         if (e.key === "5") return start();
-        if (e.key === "ArrowUp") return rotatePiece();
-        if (e.key === "ArrowLeft") return movePiece("left");
-        if (e.key === "ArrowRight") return movePiece("right");
+        if (e.key === "0") return setIsShowControlsEnabled((prevState) => !prevState);
+        if (e.key === "ArrowUp" || e.key === "8") return rotatePiece();
+        if (e.key === "ArrowLeft" || e.key === "7") return movePiece("left");
+        if (e.key === "ArrowRight" || e.key === "9") return movePiece("right");
         if (e.key === " ") return hardDrop();
     };
 
@@ -330,6 +338,7 @@ export default function Tetris({
             level: selectedLevel,
             score: score.score,
         });
+
         setScreen("scoreboard");
     };
 
@@ -411,19 +420,26 @@ export default function Tetris({
                         </div>
                     ))}
                 </div>
-                <div className="settings">
-                    &nbsp;&nbsp;&nbsp;7: LEFT&nbsp;&nbsp;&nbsp;9: RIGHT
-                    <br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8: ROTATE
-                    <br />
-                    &nbsp;&nbsp;&nbsp;4: SPEED&nbsp;&nbsp;&nbsp;5: RESET
-                    <br />
-                    &nbsp;&nbsp;&nbsp;1: SHOW NEXT
-                    <br />
-                    &nbsp;&nbsp;&nbsp;0:&nbsp;&nbsp;ERASE THIS TEXT
-                    <br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPACEBAR - RESET
-                </div>
+                {isShowControlsEnabled ? (
+                    <div className="settings">
+                        &nbsp;&nbsp;&nbsp;7: LEFT&nbsp;&nbsp;&nbsp;9: RIGHT
+                        <br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8: ROTATE
+                        <br />
+                        &nbsp;&nbsp;&nbsp;4: SPEED&nbsp;&nbsp;&nbsp;5: RESET
+                        <br />
+                        &nbsp;&nbsp;&nbsp;1: SHOW NEXT
+                        <br />
+                        &nbsp;&nbsp;&nbsp;0:&nbsp;&nbsp;ERASE THIS TEXT
+                        <br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPACEBAR - HARD DROP
+                    </div>
+                ) : (
+                    <>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </>
+                )}
             </div>
         </div>
     );
